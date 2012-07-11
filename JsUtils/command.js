@@ -1,7 +1,7 @@
 ﻿var Utils = Utils || {};
 
 (function(Utils, ko) {
-	﻿ko.command = Utils.command = function (options) {
+	ko.command = Utils.command = function (options) {
 		//allow just a function to be passed in
 		if (typeof options === 'function') options = { action: options };
 
@@ -108,4 +108,4 @@
 
 		return _execute;
 	};
-})(Utils, ko);
+})(Utils, ko || {});
