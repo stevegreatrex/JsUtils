@@ -26,12 +26,23 @@
 			//notify that we are running and clear any existing error message
 			_isRunning(true);
 
-			//invoke the action and get a reference to the deferred object
-			var promise = options.action.apply(_execute, arguments);
+			//try to invoke the action and get a reference to the deferred object
+			var promise;
+			try {
+				promise = options.action.apply(_execute, arguments);
 
-			//check that the returned object *is* a deferred object
-			if (!promise || !promise.done || !promise.always || !promise.fail)
-				throw "Specified action did not return a promise";
+				//if the returned result is *not* a promise, create a new one that is already resolved
+				if (!promise || !promise.done || !promise.always || !promise.fail) {
+					var resolvedDeferred = $.Deferred();
+					resolvedDeferred.resolve(promise);
+					promise = resolvedDeferred.promise();
+				}
+
+			} catch(error) {
+				var errorDeferred = $.Deferred();
+				errorDeferred.reject(error);
+				promise = errorDeferred.promise();
+			}
 
 			//set up our callbacks
 			promise
@@ -39,7 +50,7 @@
 				.fail(_callbacks.fail)
 				.done(_callbacks.done);
 
-				return promise;
+			return promise;
 		},
     
 		//function used to append done callbacks

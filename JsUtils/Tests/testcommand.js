@@ -17,14 +17,64 @@ test("isRunning initially false", function () {
 	equal(false, command.isRunning());
 });
 
-test("execute throws if action doesn't return promise", function () {
+test("execute returns a completed deferred if the action does not return a promise", function () {
 	var command = Utils.command({
 		action: function () { }
 	});
 
-	raises(function () {
-		command();
-	}, /Specified action did not return a promise/);
+	//execute the command
+	var result = command();
+
+	//check that the returned item is a completed promise
+	ok(result, "The result should be a completed promise");
+	ok(result.done, "The result should be a completed promise");
+	ok(result.fail, "The result should be a completed promise");
+	ok(result.always, "The result should be a completed promise");
+	ok(result.isResolved, "The result should be a completed promise");
+
+	//check that we are no longer running
+	equal(command.isRunning(), false, "The command should not be running");
+});
+
+test("execute resolves completed deferred with original result if result is returned from function", function() {
+	var doneCalled = false,
+		actionResult = { value: 123 },
+		command = Utils.command({
+			action: function () { return actionResult; }
+		});
+
+	//execute the command and check the result
+	var result = command().done(function(result) {
+		equal(result, actionResult, "The action's result should be passed to the done handler");
+		doneCalled = true;
+	});
+
+	//check that the handler was actually called
+	ok(doneCalled, "The done handler should have been invoked immediately");
+
+	//check that we are no longer running
+	equal(command.isRunning(), false, "The command should not be running");
+});
+
+
+test("execute runs fail handlers if the command action throws an error", function() {
+	var failCalled = false,
+		actionError = "a random error",
+		command = Utils.command({
+			action: function () { throw actionError; }
+		});
+
+	//execute the command and check the result
+	var result = command().fail(function (error) {
+		equal(error, actionError, "The action's error should be passed to the fail handler");
+		failCalled = true;
+	});
+
+	//check that the handler was actually called
+	ok(failCalled, "The fail handler should have been invoked immediately");
+
+	//check that we are no longer running
+	equal(command.isRunning(), false, "The command should not be running");
 });
 
 test("execute is passed correct this and arguments", function () {
