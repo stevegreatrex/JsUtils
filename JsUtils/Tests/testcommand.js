@@ -2,287 +2,34 @@
 
 test("throws when null options are specified", function () {
 	raises(function () {
-		new Command();
+		Utils.command();
 	}, /No options were specified/);
 });
 
 test("throws when no action is specified", function () {
 	raises(function () {
-		new Command({});
+		Utils.command({});
 	}, /No action was specified in the options/);
 });
 
 test("isRunning initially false", function () {
-	var command = new Command({ action: {} });
+	var command = Utils.command({ action: {} });
 	equal(false, command.isRunning());
 });
 
-test("errorMessage initially null", function () {
-	var command = new Command({ action: {} });
-	equal(null, command.errorMessage());module("Command Tests");
-
-test("throws when null options are specified", function () {
-    raises(function () {
-        new Command();
-    }, /No options were specified/);
-});
-
-test("throws when no action is specified", function () {
-    raises(function () {
-        new Command({});
-    }, /No action was specified in the options/);
-});
-
-test("isRunning initially false", function () {
-    var command = new Command({ action: {} });
-    equal(false, command.isRunning());
-});
-
-test("errorMessage initially null", function () {
-    var command = new Command({ action: {} });
-    equal(null, command.errorMessage());
-});
-
 test("execute throws if action doesn't return promise", function () {
-    var command = new Command({
-        action: function () { }
-    });
-
-    raises(function () {
-        command.execute();
-    }, /Specified action did not return a promise/);
-});
-
-test("execute is passed correct this and arguments", function () {
-    var arg1 = "one", arg2 = "two";
-    var command = new Command({
-        action: function (a1, a2) {
-            equal(this, command, "this was not set to the command");
-            equal(a1, arg1, "arguments were not passed in");
-            equal(a2, arg2, "arguments were not passed in");
-            return $.Deferred();
-        }
-    });
-
-    command.execute(arg1, arg2);
-});
-
-
-test("execute sets isRunning and clears error", function () {
-    var deferred = $.Deferred();
-    var command = new Command({
-        action: function () {
-            return deferred;
-        }
-    });
-
-    //set the initial value of error message
-    command.errorMessage("not blank");
-
-    //execute the command
-    command.execute();
-
-    //check that isRunning is true and the error was cleared
-    equal(true, command.isRunning(), "isRunning should be set");
-    equal("", command.errorMessage(), "errorMessage should be cleared");
-
-    //complete the async operation
-    deferred.resolve();
-
-    //check is running has been reset
-    equal(false, command.isRunning(), "isRunning should be reset");
-});
-
-test("execute saves error", function () {
-    var deferred = $.Deferred();
-    var command = new Command({
-        action: function () {
-            return deferred;
-        }
-    });
-
-    //set the initial value of error message
-    command.errorMessage("not blank");
-
-    //execute the command
-    command.execute();
-
-    //check that isRunning is true and the error was cleared
-    equal(true, command.isRunning(), "isRunning should be set");
-    equal("", command.errorMessage(), "errorMessage should be cleared");
-
-    //fail the async operation
-    deferred.reject({}, "error message");
-
-    //check is running has been reset
-    equal(false, command.isRunning(), "isRunning should be reset");
-    equal("error message", command.errorMessage(), "errorMessage should be populated");
-});
-
-test("execute invokes done handlers", function () {
-    var deferred = $.Deferred(),
-		responseData = {},
-		handlerCalled = false;
-
-    var command = new Command({
-        action: function () {
-            return deferred;
-        },
-        done: function (data) {
-            equal(responseData, data, "The data should be passed to the done handler");
-            handlerCalled = true;
-        }
-    });
-
-    //execute the command
-    command.execute();
-
-    //complete the async operation
-    deferred.resolve(responseData);
-
-    //check the handler was invoked
-    equal(true, handlerCalled, "The done handler should have been called");
-});
-
-test("execute invokes fail handlers", function () {
-    var deferred = $.Deferred(),
-		responseData = {},
-		handlerCalled = false;
-
-    var command = new Command({
-        action: function () {
-            return deferred;
-        },
-        fail: function (data) {
-            equal(responseData, data, "The data should be passed to the fail handler");
-            handlerCalled = true;
-        }
-    });
-
-    //execute the command
-    command.execute();
-
-    //complete the async operation
-    deferred.reject(responseData);
-
-    //check the handler was invoked
-    equal(true, handlerCalled, "The fail handler should have been called");
-});
-
-test("done attaches handler", function () {
-    var deferred = $.Deferred(),
-		responseData = {},
-		handlerCalled = false;
-
-    var command = new Command({
-        action: function () {
-            return deferred;
-        }
-    })
-    .done(function (data) {
-        equal(responseData, data, "The data should be passed to the done handler");
-        handlerCalled = true;
-    });
-
-    //execute the command
-    command.execute();
-
-    //complete the async operation
-    deferred.resolve(responseData);
-
-    //check the handler was invoked
-    equal(true, handlerCalled, "The done handler should have been called");
-});
-
-test("fail attaches handler", function () {
-    var deferred = $.Deferred(),
-		responseData = {},
-		handlerCalled = false;
-
-    var command = new Command({
-        action: function () {
-            return deferred;
-        }
-    })
-    .fail(function (data) {
-        equal(responseData, data, "The data should be passed to the fail handler");
-        handlerCalled = true;
-    });
-
-    //execute the command
-    command.execute();
-
-    //complete the async operation
-    deferred.reject(responseData);
-
-    //check the handler was invoked
-    equal(true, handlerCalled, "The fail handler should have been called");
-});
-
-test("always handler is invoked on done", function () {
-    var deferred = $.Deferred(),
-		responseData = {},
-		handlerCalled = false;
-
-    var command = new Command({
-        action: function () {
-            return deferred;
-        }
-    })
-    .always(function (data) {
-        equal(responseData, data, "The data should be passed to the done handler");
-        handlerCalled = true;
-    });
-
-    //execute the command
-    command.execute();
-
-    //complete the async operation
-    deferred.resolve(responseData);
-
-    //check the handler was invoked
-    equal(true, handlerCalled, "The done handler should have been called");
-});
-
-test("always handler is invoked on fail", function () {
-    var deferred = $.Deferred(),
-		responseData = {},
-		handlerCalled = false;
-
-    var command = new Command({
-        action: function () {
-            return deferred;
-        }
-    })
-    .always(function (data) {
-        equal(responseData, data, "The data should be passed to the fail handler");
-        handlerCalled = true;
-    });
-
-    //execute the command
-    command.execute();
-
-    //complete the async operation
-    deferred.reject(responseData);
-
-    //check the handler was invoked
-    equal(true, handlerCalled, "The fail handler should have been called");
-});
-});
-
-test("execute throws if action doesn't return promise", function () {
-	var command = new Command({
+	var command = Utils.command({
 		action: function () { }
 	});
 
 	raises(function () {
-		command.execute();
+		command();
 	}, /Specified action did not return a promise/);
 });
 
 test("execute is passed correct this and arguments", function () {
 	var arg1 = "one", arg2 = "two";
-	var command = new Command({
+	var command = Utils.command({
 		action: function (a1, a2) {
 			equal(this, command, "this was not set to the command");
 			equal(a1, arg1, "arguments were not passed in");
@@ -291,27 +38,23 @@ test("execute is passed correct this and arguments", function () {
 		}
 	});
 
-	command.execute(arg1, arg2);
+	command(arg1, arg2);
 });
 
 
-test("execute sets isRunning and clears error", function () {
+test("execute sets isRunning", function () {
 	var deferred = $.Deferred();
-	var command = new Command({
+	var command = Utils.command({
 		action: function () {
 			return deferred;
 		}
 	});
 
-	//set the initial value of error message
-	command.errorMessage("not blank");
-
 	//execute the command
-	command.execute();
+	command();
 
 	//check that isRunning is true and the error was cleared
 	equal(true, command.isRunning(), "isRunning should be set");
-	equal("", command.errorMessage(), "errorMessage should be cleared");
 
 	//complete the async operation
 	deferred.resolve();
@@ -320,38 +63,12 @@ test("execute sets isRunning and clears error", function () {
 	equal(false, command.isRunning(), "isRunning should be reset");
 });
 
-test("execute saves error", function () {
-	var deferred = $.Deferred();
-	var command = new Command({
-		action: function () {
-			return deferred;
-		}
-	});
-
-	//set the initial value of error message
-	command.errorMessage("not blank");
-
-	//execute the command
-	command.execute();
-
-	//check that isRunning is true and the error was cleared
-	equal(true, command.isRunning(), "isRunning should be set");
-	equal("", command.errorMessage(), "errorMessage should be cleared");
-
-	//fail the async operation
-	deferred.reject({}, "error message");
-
-	//check is running has been reset
-	equal(false, command.isRunning(), "isRunning should be reset");
-	equal("error message", command.errorMessage(), "errorMessage should be populated");
-});
-
 test("execute invokes done handlers", function () {
 	var deferred = $.Deferred(),
 		responseData = {},
 		handlerCalled = false;
 
-	var command = new Command({
+	var command = Utils.command({
 		action: function () {
 			return deferred;
 		},
@@ -362,7 +79,7 @@ test("execute invokes done handlers", function () {
 	});
 
 	//execute the command
-	command.execute();
+	command();
 
 	//complete the async operation
 	deferred.resolve(responseData);
@@ -376,7 +93,7 @@ test("execute invokes fail handlers", function () {
 		responseData = {},
 		handlerCalled = false;
 
-	var command = new Command({
+	var command = Utils.command({
 		action: function () {
 			return deferred;
 		},
@@ -387,7 +104,7 @@ test("execute invokes fail handlers", function () {
 	});
 
 	//execute the command
-	command.execute();
+	command();
 
 	//complete the async operation
 	deferred.reject(responseData);
@@ -396,3 +113,182 @@ test("execute invokes fail handlers", function () {
 	equal(true, handlerCalled, "The fail handler should have been called");
 });
 
+test("done attaches handler", function () {
+	var deferred = $.Deferred(),
+		responseData = {},
+		handlerCalled = false;
+
+	var command = Utils.command({
+		action: function () {
+			return deferred;
+		}
+	})
+    .done(function (data) {
+    	equal(responseData, data, "The data should be passed to the done handler");
+    	handlerCalled = true;
+    });
+
+	//execute the command
+	command();
+
+	//complete the async operation
+	deferred.resolve(responseData);
+
+	//check the handler was invoked
+	equal(true, handlerCalled, "The done handler should have been called");
+});
+
+test("fail attaches handler", function () {
+	var deferred = $.Deferred(),
+		responseData = {},
+		handlerCalled = false;
+
+	var command = Utils.command({
+		action: function () {
+			return deferred;
+		}
+	})
+    .fail(function (data) {
+    	equal(responseData, data, "The data should be passed to the fail handler");
+    	handlerCalled = true;
+    });
+
+	//execute the command
+	command();
+
+	//complete the async operation
+	deferred.reject(responseData);
+
+	//check the handler was invoked
+	equal(true, handlerCalled, "The fail handler should have been called");
+});
+
+test("always handler is invoked on done", function () {
+	var deferred = $.Deferred(),
+		responseData = {},
+		handlerCalled = false;
+
+	var command = Utils.command({
+		action: function () {
+			return deferred;
+		}
+	})
+    .always(function (data) {
+    	equal(responseData, data, "The data should be passed to the done handler");
+    	handlerCalled = true;
+    });
+
+	//execute the command
+	command();
+
+	//complete the async operation
+	deferred.resolve(responseData);
+
+	//check the handler was invoked
+	equal(true, handlerCalled, "The done handler should have been called");
+});
+
+test("always handler is invoked on fail", function () {
+	var deferred = $.Deferred(),
+		responseData = {},
+		handlerCalled = false;
+
+	var command = Utils.command({
+		action: function () {
+			return deferred;
+		}
+	})
+    .always(function (data) {
+    	equal(responseData, data, "The data should be passed to the fail handler");
+    	handlerCalled = true;
+    });
+
+	//execute the command
+	command();
+
+	//complete the async operation
+	deferred.reject(responseData);
+
+	//check the handler was invoked
+	equal(true, handlerCalled, "The fail handler should have been called");
+});
+
+test("can specify function as only parameter", function () {
+	var deferred = $.Deferred();
+
+	var command = Utils.command(function () {
+		return deferred;
+	});
+
+	//execute the command
+	command();
+
+	//check that isRunning is true
+	equal(true, command.isRunning(), "isRunning should be set");
+
+	//complete the async operation
+	deferred.resolve();
+
+	//check is running has been reset
+	equal(false, command.isRunning(), "isRunning should be reset");
+});
+
+test("execute returns promise", function () {
+	var deferred = $.Deferred(),
+	responseData = {},
+	handlerCalled = false;
+
+	var command = Utils.command({
+		action: function () {
+			return deferred;
+		}
+	});
+
+	//execute the command and attach the done handler
+	command().done(function (data) {
+		equal(responseData, data, "The data should be passed to the done handler");
+		handlerCalled = true;
+	});
+
+	//complete the async operation
+	deferred.resolve(responseData);
+
+	//check the handler was invoked
+	equal(true, handlerCalled, "The done handler should have been called");
+});
+
+test("can use ko.command syntax", function() {
+	var deferred1 = $.Deferred(),
+		deferred2 = $.Deferred(),
+		done1 = false,
+		done2 = false,
+		ViewModel = function() {
+			this.command1 = ko.command(function() { return deferred1; }).done(function() { done1 = true });
+			this.command2 = ko.command(function() { return deferred2; }).done(function() { done2 = true });
+		},
+		testSubject = new ViewModel();
+
+	//run one of the commands and check it is the only one running
+	testSubject.command1();
+	equal(testSubject.command1.isRunning(), true, "First command should be running");
+	equal(testSubject.command2.isRunning(), false, "Second command should not be running");
+
+	//start the second command running
+	testSubject.command2();
+	equal(testSubject.command1.isRunning(), true, "Both commands should now be running");
+	equal(testSubject.command2.isRunning(), true, "Both commands should now be running");
+
+	//allow the second command to complete
+	deferred2.resolve();
+
+	//check that only the second command has completed
+	equal(testSubject.command1.isRunning(), true, "First command should still be running");
+	equal(testSubject.command2.isRunning(), false, "Second command should have completed");
+	equal(done1, false, "First command should not have invoked handlers");
+	equal(done2, true, "Second command should have invoked handlers");
+
+	//now let the first command complete and check it's properties
+	deferred1.resolve();
+	equal(testSubject.command1.isRunning(), false, "First command should now have completed");
+	equal(done1, true, "First command should have invoked handlers");
+});
