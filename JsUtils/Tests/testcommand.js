@@ -395,3 +395,4 @@ test("execute invokes fail handlers", function () {
 	//check the handler was invoked
 	equal(true, handlerCalled, "The fail handler should have been called");
 });
+
