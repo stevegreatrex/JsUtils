@@ -21,8 +21,24 @@
 			always: [function () { _isRunning(false); }]
 		},
 
+		//factory method to create a $.Deferred that is already completed
+		_instantDeferred = function(resolve, returnValue) {
+			var deferred = $.Deferred();
+			if (resolve)
+				deferred.resolve(returnValue);
+			else
+				deferred.reject(returnValue);
+			return deferred;
+		},
+
 		//execute function (and return object
 		_execute = function () {
+			//check if we are able to execute
+			if (!_canExecute()) {
+				//dont attach any global handlers
+				return _instantDeferred(false).promise();
+			}
+
 			//notify that we are running and clear any existing error message
 			_isRunning(true);
 
@@ -33,15 +49,11 @@
 
 				//if the returned result is *not* a promise, create a new one that is already resolved
 				if (!promise || !promise.done || !promise.always || !promise.fail) {
-					var resolvedDeferred = $.Deferred();
-					resolvedDeferred.resolve(promise);
-					promise = resolvedDeferred.promise();
+					promise = _instantDeferred(true, promise).promise();
 				}
 
 			} catch(error) {
-				var errorDeferred = $.Deferred();
-				errorDeferred.reject(error);
-				promise = errorDeferred.promise();
+				promise = _instantDeferred(false, error).promise();
 			}
 
 			//set up our callbacks
@@ -51,6 +63,19 @@
 				.done(_callbacks.done);
 
 			return promise;
+		},
+		
+		//canExecute flag
+		_forceRefreshCanExecute = ko.observable(), //note, this is to allow us to force a re-evaluation of the computed _canExecute observable
+		_canExecute = ko.computed(function() {
+			_forceRefreshCanExecute(); //just get the value so that we register _canExecute with _forceRefreshCanExecute
+			return !_isRunning() &&
+				(typeof options.canExecute === "undefined" || options.canExecute.call(_execute));
+		}, _execute),
+		
+		//invalidate canExecute
+		_canExecuteHasMutated = function() {
+			_forceRefreshCanExecute.notifySubscribers();
 		},
     
 		//function used to append done callbacks
@@ -74,10 +99,12 @@
 		if (options.fail) _callbacks.fail.push(options.fail);
 
 		//public properties
-		_execute.isRunning    = _isRunning;
-		_execute.done         = _done;
-		_execute.fail         = _fail;
-		_execute.always       = _always;
+		_execute.isRunning            = _isRunning;
+		_execute.canExecute           = _canExecute;
+		_execute.canExecuteHasMutated = _canExecuteHasMutated;
+		_execute.done                 = _done;
+		_execute.fail                 = _fail;
+		_execute.always               = _always;
 
 		return _execute;
 	};

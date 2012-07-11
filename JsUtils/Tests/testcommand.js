@@ -342,3 +342,110 @@ test("can use ko.command syntax", function() {
 	equal(testSubject.command1.isRunning(), false, "First command should now have completed");
 	equal(done1, true, "First command should have invoked handlers");
 });
+
+test("canExecute returns true by default", function() {
+	var command = Utils.command(function(){});
+
+	ok(command.canExecute(), "canExecute should return true unless something has been specified");
+});
+
+test("canExecute returns false whilst action is running", function() {
+	var deferred = $.Deferred(),
+		command = Utils.command(function() { return deferred; });
+
+	//execute the command
+	command();
+
+	//check that canExecute is false
+	ok(!command.canExecute(), "canExecute should return false when the command is running");
+
+	//allow the command to complete
+	deferred.resolve();
+
+	//check that the command can execute again
+	ok(command.canExecute(), "canExecute should return true once the command completes");
+});
+
+test("canExecute returns true after action fails", function () {
+	var deferred = $.Deferred(),
+		command = Utils.command(function () { return deferred; });
+
+	//execute the command
+	command();
+
+	//check that canExecute is false
+	ok(!command.canExecute(), "canExecute should return false when the command is running");
+
+	//allow the command to fail
+	deferred.reject();
+
+	//check that the command can execute again
+	ok(command.canExecute(), "canExecute should return true once the command fails");
+});
+
+
+test("canExecute returns false if options-specified item returns false", function() {
+	var actionCanExecute = true,
+		command = Utils.command({
+			action: function () { return deferred; },
+			canExecute: function() { return actionCanExecute; }
+		});
+
+	//check initially can execute
+	ok(command.canExecute(), "canExecute should return true when not running and when parameter canExecute is true");
+
+	//now set the action's canExecute to false and check we can't execute
+	actionCanExecute = false;
+	command.canExecuteHasMutated();
+	ok(!command.canExecute(), "canExecute should return false when the parameter canExecute is false");
+
+	//fake a start to the execution and check that canExecute is still false
+	command.isRunning(true);
+	ok(!command.canExecute(), "canExecute should return false when the command is running");
+
+	//now set the parameter canExecute to true and check canExecute is still false (we are still running)
+	actionCanExecute = true;
+	command.canExecuteHasMutated();
+	ok(!command.canExecute(), "canExecute should return false when the command is running");
+
+	//fake an end to the running
+	command.isRunning(false);
+
+	//check that the command can execute again
+	ok(command.canExecute(), "canExecute should return true once the command stops running and the parameter-specified canExecute returns true");
+});
+
+test("canExecute is called in the context of the command", function() {
+	var canExecuteContext,
+		command = Utils.command({
+			action: function(){},
+			canExecute: function() {
+				canExecuteContext = this;
+			}
+	});
+
+	command.canExecute();
+
+	equal(canExecuteContext, command, "canExecute should be called in the context of the command");
+});
+
+test("execute returns a completed deferred object when canExecute is false", function() {
+	var actionCalled = false,
+		doneCalled = false,
+		failCalled = false,
+		command = Utils.command({
+			action: function() { actionCalled = true; },
+			canExecute: function() { return false; }
+		});
+
+	//try to invoke the command
+	command()
+		.done(function() { doneCalled = true; })
+		.fail(function() { failCalled = true; });
+
+	//check that neither the done handler nor the action were called
+	ok(!doneCalled, "The done handler should have been called");
+	ok(failCalled, "The fail handler should have been called");
+	ok(!command.isRunning(), "The command should not be running");
+	ok(!actionCalled, "The action should not have been invoked");
+});
