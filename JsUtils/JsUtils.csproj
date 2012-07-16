@@ -43,9 +43,11 @@
     <Content Include="Scripts\knockout-2.1.0.debug.js" />
     <Content Include="Scripts\knockout-2.1.0.js" />
     <Content Include="Scripts\qunit.js" />
+    <Content Include="pagedlist.js" />
     <Content Include="Tests\testcommand.js" />
     <Content Include="Tests\testpagedobservablearray.js" />
     <Content Include="Tests\TestRunner.htm" />
+    <Content Include="Tests\testpagedlist.js" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
