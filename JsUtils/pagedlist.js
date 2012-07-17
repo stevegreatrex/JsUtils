@@ -35,11 +35,11 @@
                 if (!result) throw "No page results";
                 if (!result.rows) throw "Result should contain rows array";
 
-				if (options.map) {
-					_page($.map(result.rows, options.map));
-				} else {
-					_page(result.rows);
-				}
+                if (options.map) {
+			_page($.map(result.rows, options.map));
+		} else {
+			_page(result.rows);
+		}
 
                 //save the total row count if it was returned
                 if (result.totalRows) {
