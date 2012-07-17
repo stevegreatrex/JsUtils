@@ -48,9 +48,13 @@
     <Content Include="Tests\testpagedobservablearray.js" />
     <Content Include="Tests\TestRunner.htm" />
     <Content Include="Tests\testpagedlist.js" />
+    <Content Include="utils.min.js">
+      <DependentUpon>utils.chirp.config</DependentUpon>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="utils.chirp.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
