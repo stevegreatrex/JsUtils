@@ -151,15 +151,20 @@ test("load a new page", function() {
 
 test("change pageSize causes re-load", function() {
 	var loading = $.Deferred(),
+		loadCount = 0,
 		data = [1, 2],
 		testSubject = Utils.pagedList({
 			loadPage: function (pageIndex, pageSize) {
-				equal(pageIndex, 0, "Load should have been the current pageIndex");
+				equal(pageIndex, 0, "Load should have been passed pageIndex of zero");
 				equal(pageSize, 2, "pageSize should have been passed to the loadPage function");
+				loadCount++;
 				return loading;
 			},
 			firstPage: { rows: []} //include firstPage to avoid initial load
 		});
+
+	//fake setting the current page to something other than 0
+	testSubject.pageIndex(10);
 
 	//set the page size
 	testSubject.pageSize(2);
@@ -174,10 +179,15 @@ test("change pageSize causes re-load", function() {
 		totalRows: 99
 	});
 
-	//check that we are no longer running the load
+	//check that we are no longer running the load and that pgeIndex was reset
 	ok(!testSubject.loadPage.isRunning(), "The load should have completed");
 	deepEqual(testSubject(), data, "The data should have been loaded now");
 	equal(testSubject.totalRows(), 99, "totalRows should have been updated");
+	equal(testSubject.pageIndex(), 0, "pageIndex should have been reset");
+
+	//check that load was only called once
+	equal(loadCount, 1, "load should only have been called once");
+
 });
 
 test("map function is used if specified", function() {
