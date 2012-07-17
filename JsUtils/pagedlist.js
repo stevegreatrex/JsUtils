@@ -2,12 +2,12 @@
 
 (function(Utils, ko) {
     ko.pagedList = Utils.pagedList = function(options) {
-		if (!options) throw "Options not specified";
+	if (!options) throw "Options not specified";
         if (!options.loadPage) throw "loadPage not specified on options";
 
         var _self = this,
 			
-			//page size
+            //page size
             _pageSize = ko.observable(options.pageSize || 10),
 
             //current page index
