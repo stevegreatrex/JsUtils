@@ -14,10 +14,13 @@
 		//flag to indicate that the operation is running
 		_isRunning = ko.observable(false),
 
+		//flag to indicate that the operation failed when last executed
+		_failed = ko.observable(false),
+
 		//record callbacks
 		_callbacks = {
 			done: [],
-			fail: [],
+			fail: [function () { _failed(true); }],
 			always: [function () { _isRunning(false); }]
 		},
 
@@ -41,6 +44,7 @@
 
 			//notify that we are running and clear any existing error message
 			_isRunning(true);
+			_failed(false);
 
 			//try to invoke the action and get a reference to the deferred object
 			var promise;
@@ -77,7 +81,7 @@
 		_canExecuteHasMutated = function() {
 			_forceRefreshCanExecute.notifySubscribers();
 		},
-    
+	
 		//function used to append done callbacks
 		_done = function(callback) {
 			_callbacks.done.push(callback);
@@ -105,6 +109,7 @@
 		_execute.done                 = _done;
 		_execute.fail                 = _fail;
 		_execute.always               = _always;
+		_execute.failed               = _failed;
 
 		return _execute;
 	};

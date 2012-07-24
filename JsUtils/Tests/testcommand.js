@@ -449,3 +449,35 @@ test("execute returns a completed deferred object when canExecute is false", fun
 	ok(!command.isRunning(), "The command should not be running");
 	ok(!actionCalled, "The action should not have been invoked");
 });
+
+test("failed is initially false", function() {
+	var testSubject = Utils.command(function() {});
+
+	ok(!testSubject.failed(), "failed should initially return false");
+});
+
+test("failed is set to true when operation fails", function() {
+	var deferred = $.Deferred(),
+		responseData = {};
+
+	var command = Utils.command({
+		action: function () {
+			return deferred;
+		}
+	});
+
+	//fake the error handler being true
+	command.failed(true);
+
+	//execute the command
+	command();
+
+	//check that failed has been reset
+	ok(!command.failed(), "failed should have been reset");
+
+	//complete the async operation
+	deferred.reject(responseData);
+
+	//check the flag was set
+	ok(command.failed(), "failed should have been set");
+});
