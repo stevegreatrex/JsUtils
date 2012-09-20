@@ -48,6 +48,9 @@
     <Content Include="Tests\testpagedobservablearray.js" />
     <Content Include="Tests\TestRunner.htm" />
     <Content Include="Tests\testpagedlist.js" />
+    <Content Include="utils.js">
+      <DependentUpon>utils.chirp.config</DependentUpon>
+    </Content>
     <Content Include="utils.min.js">
       <DependentUpon>utils.chirp.config</DependentUpon>
     </Content>
