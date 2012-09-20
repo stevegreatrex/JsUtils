@@ -36,6 +36,7 @@
   <ItemGroup>
     <Content Include="Content\qunit.css" />
     <Content Include="command.js" />
+    <Content Include="editable.js" />
     <Content Include="pagedobservablearray.js" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
@@ -44,6 +45,7 @@
     <Content Include="Scripts\knockout-2.1.0.js" />
     <Content Include="Scripts\qunit.js" />
     <Content Include="pagedlist.js" />
+    <Content Include="Tests\testeditable.js" />
     <Content Include="Tests\testcommand.js" />
     <Content Include="Tests\testpagedobservablearray.js" />
     <Content Include="Tests\TestRunner.htm" />

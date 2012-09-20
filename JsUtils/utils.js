@@ -8,7 +8,7 @@
 		//check an action was specified
 		if (!options) throw "No options were specified";
 		if (!options.action) throw "No action was specified in the options";
-        
+
 		var 
 
 		//flag to indicate that the operation is running
@@ -271,3 +271,39 @@ var Utils = Utils || {};
 		return _page;
 	};
 })(Utils, ko);
+var Utils = Utils || {};
+
+(function (Utils, ko) {
+    ko.editable = Utils.editable = function (initial) {
+        var _rollbackValue,
+            _observable = ko.observable(initial);
+
+        //a flag to indicate if the field is being edited
+        _observable.isEditing = ko.observable(false);
+
+        //start an edit
+        _observable.beginEdit = function () {
+            _rollbackValue = _observable();
+            _observable.isEditing(true);
+        };
+
+        //end (commit) an edit
+        _observable.endEdit = function () {
+            if (!_observable.isEditing()) return;
+
+            _observable.isEditing(false);
+        };
+
+        //cancel and roll-back an edit
+        _observable.cancelEdit = function () {
+            if (!_observable.isEditing()) return;
+            
+            _observable(_rollbackValue);
+
+            _observable.isEditing(false);
+        };
+
+        //public members
+        return _observable;
+    };
+})(Utils, ko || {});
