@@ -343,3 +343,28 @@ test("previousPage loads the previous page of data when pagecount is valid", fun
 	deepEqual(testSubject(), [1, 2, 3], "The data should have been updated");
 	equal(testSubject.pageIndex(), 1, "The page index should now have been updated");
 });
+
+test("done handlers are called on loadPage", function () {
+    var loading = $.Deferred(),
+		testSubject = Utils.pagedList({
+		    loadPage: function (pageIndex, pageSize) {
+		        return loading;
+		    },
+		    firstPage: { rows: [] }
+		}),
+        doneHandlerCalled = false,
+		dataToReturn = { rows: [] };
+
+    testSubject.loadPage(0).done(function (data) {
+        doneHandlerCalled = true;
+        equal(data, dataToReturn, "The data passed to the done handler should be the result of load page");
+    });
+
+    ok(!doneHandlerCalled, "Done handler shouldn't be called yet");
+
+    loading.resolve(dataToReturn);
+
+    ok(doneHandlerCalled, "Done handler should have been called");
+
+
+});
