@@ -1,15 +1,19 @@
-﻿var Utils = Utils || {};
+﻿/* global ko: false */
 
-(function(Utils, ko) {
-	ko.command = Utils.command = function (options) {
+(function (window, ko, undefined) {
+    "use strict";
+
+    window.Utils = window.Utils || {};
+
+	ko.command = window.Utils.command = function (options) {
 		//allow just a function to be passed in
-		if (typeof options === 'function') options = { action: options };
+	    if (typeof options === "function") { options = { action: options }; }
 
 		//check an action was specified
-		if (!options) throw "No options were specified";
-		if (!options.action) throw "No action was specified in the options";
+	    if (!options) { throw "No options were specified"; }
+	    if (!options.action) { throw "No action was specified in the options"; }
 
-		var 
+	    var
 
 		//flag to indicate that the operation is running
 		_isRunning = ko.observable(false),
@@ -27,10 +31,12 @@
 		//factory method to create a $.Deferred that is already completed
 		_instantDeferred = function(resolve, returnValue) {
 			var deferred = $.Deferred();
-			if (resolve)
-				deferred.resolve(returnValue);
-			else
-				deferred.reject(returnValue);
+			if (resolve) {
+			    deferred.resolve(returnValue);
+			} else {
+			    deferred.reject(returnValue);
+			}
+
 			return deferred;
 		},
 
@@ -99,8 +105,8 @@
 		};
 
 		//attach the done and fail handlers on the options if specified
-		if (options.done) _callbacks.done.push(options.done);
-		if (options.fail) _callbacks.fail.push(options.fail);
+	    if (options.done) { _callbacks.done.push(options.done); }
+	    if (options.fail) { _callbacks.fail.push(options.fail); }
 
 		//public properties
 		_execute.isRunning            = _isRunning;
@@ -113,4 +119,4 @@
 
 		return _execute;
 	};
-})(Utils, ko || {});
+}(window, ko));

@@ -1,13 +1,13 @@
-﻿var Utils = Utils || {};
+﻿(function (window, ko, undefined) {
+    "use strict";
 
-(function(Utils, ko) {
-	ko.pagedList = Utils.pagedList = function(options) {
-	if (!options) throw "Options not specified";
-		if (!options.loadPage) throw "loadPage not specified on options";
+    window.Utils = window.Utils || {};
 
-		var _self = this,
-			
-			//page size
+    ko.pagedList = window.Utils.pagedList = function(options) {
+        if (!options) { throw "Options not specified"; }
+        if (!options.loadPage) { throw "loadPage not specified on options"; }
+
+		var //page size
 			_pageSize = ko.observable(options.pageSize || 10),
 
 			//current page index
@@ -16,14 +16,14 @@
 			//the total number of rows, defaulting to -1 indicating unknown
 			_totalRows = ko.observable(-1),
 
-			//observable containing current page data.  Using observable instead of observableArray as 
+			//observable containing current page data.  Using observable instead of observableArray as
 			//all this will do is present data
 			_page = ko.observable([]),
 
 			//load a page of data, then display it
-			_loadPage = Utils.command(function(pageIndex) {
+			_loadPage = window.Utils.command(function(pageIndex) {
 				var promise = options.loadPage(pageIndex, _pageSize());
-				if (!promise.pipe) throw "loadPage should return a promise";
+				if (!promise.pipe) { throw "loadPage should return a promise"; }
 
 				return promise.pipe(_displayPage).done(function() {
 					_pageIndex(pageIndex);
@@ -32,8 +32,8 @@
 
 			//display a page of data
 			_displayPage = function(result) {
-				if (!result) throw "No page results";
-				if (!result.rows) throw "Result should contain rows array";
+			    if (!result) { throw "No page results"; }
+			    if (!result.rows) { throw "Result should contain rows array"; }
 
 				if (options.map) {
 					_page($.map(result.rows, options.map));
@@ -51,7 +51,7 @@
 
 			//the number of pages
 			_pageCount = ko.computed(function() {
-				if (_totalRows() === -1) return -1;
+			    if (_totalRows() === -1) { return -1; }
 
 				return Math.ceil(_totalRows() / _pageSize()) || 1;
 			}),
@@ -96,4 +96,4 @@
 
 		return _page;
 	};
-})(Utils, ko);
+}(window, ko));

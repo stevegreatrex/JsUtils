@@ -1,7 +1,11 @@
-﻿var Utils = Utils || {};
+﻿/* global ko: false */
 
-(function (Utils, ko) {
-    ko.editable = Utils.editable = function (initial) {
+(function (window, ko, undefined) {
+    "use strict";
+
+    window.Utils = window.Utils || {};
+
+    ko.editable = window.Utils.editable = function (initial) {
         var _rollbackValue,
             _observable = ko.observable(initial);
 
@@ -16,14 +20,14 @@
 
         //end (commit) an edit
         _observable.endEdit = function () {
-            if (!_observable.isEditing()) return;
+            if (!_observable.isEditing()) { return; }
 
             _observable.isEditing(false);
         };
 
         //cancel and roll-back an edit
         _observable.cancelEdit = function () {
-            if (!_observable.isEditing()) return;
+            if (!_observable.isEditing()) { return; }
             
             _observable(_rollbackValue);
 
@@ -33,4 +37,4 @@
         //public members
         return _observable;
     };
-})(Utils, ko || {});
+}(window, ko));
