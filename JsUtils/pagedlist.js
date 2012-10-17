@@ -1,4 +1,6 @@
-﻿(function (window, ko, undefined) {
+﻿/*global ko: false*/
+
+(function (window, ko, undefined) {
     "use strict";
 
     window.Utils = window.Utils || {};

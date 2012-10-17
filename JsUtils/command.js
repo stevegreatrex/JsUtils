@@ -1,4 +1,4 @@
-﻿/* global ko: false */
+﻿/*global ko: false*/
 
 (function (window, ko, undefined) {
     "use strict";
