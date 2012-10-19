@@ -4,5 +4,6 @@
   <file>/pagedobservablearray.js</file>
   <file>/pagedlist.js</file>
   <file>/editable.js</file>
-  <file>/command.js</file>
+	<file>/command.js</file>
+	<file>/pubsub.js</file>
 </bundle>

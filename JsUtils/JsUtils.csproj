@@ -41,6 +41,7 @@
     <Content Include="command.js" />
     <Content Include="editable.js" />
     <Content Include="pagedobservablearray.js" />
+    <Content Include="pubsub.js" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />
@@ -51,18 +52,19 @@
     <Content Include="Tests\testeditable.js" />
     <Content Include="Tests\testcommand.js" />
     <Content Include="Tests\testpagedobservablearray.js" />
+    <Content Include="Tests\testpubsub.js" />
     <Content Include="Tests\TestRunner.htm" />
     <Content Include="Tests\testpagedlist.js" />
     <Content Include="utils.js">
-      <DependentUpon>utils.chirp.config</DependentUpon>
+      <DependentUpon>utils.js.bundle</DependentUpon>
     </Content>
     <Content Include="utils.min.js">
-      <DependentUpon>utils.chirp.config</DependentUpon>
+      <DependentUpon>utils.js.bundle</DependentUpon>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="utils.chirp.config" />
+    <None Include="utils.js.bundle" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
