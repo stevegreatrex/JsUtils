@@ -37,7 +37,7 @@
         getEvent(event).subscriptions.push(subscription);
 
         if (subscription.stateful) {
-            subscription.callback.call(null, getEvent(event).lastPublish);
+            subscription.callback.call(null, getEvent(event).lastPayload);
         }
     };
 
@@ -46,7 +46,7 @@
             throw "Event name must be a string";
         }
         
-        getEvent(event).lastPublish = data;
+        getEvent(event).lastPayload = data;
         var subscriptions = events[event].subscriptions;
         for (var i = 0; i < subscriptions.length; i++) {
             (function (subscription, data) {
