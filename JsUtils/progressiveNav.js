@@ -1,4 +1,4 @@
-﻿(function ($, undefined) {
+﻿(function ($, ko, undefined) {
 	"use strict";
 
 	$.fn.progressiveNav = function (startGroup) {
@@ -56,4 +56,10 @@
 		//show the first group - either passed in or the first one found
 		showGroup(startGroup);
 	};
-}(jQuery));
+
+	ko.bindingHandlers.progressiveNav =  {
+		update: function (element) {
+			$(element).progressiveNav();
+		}
+	};
+}(jQuery, ko));
