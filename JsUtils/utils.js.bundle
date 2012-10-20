@@ -6,4 +6,5 @@
   <file>/editable.js</file>
 	<file>/command.js</file>
 	<file>/pubsub.js</file>
+	<file>/progressivenav.js</file>
 </bundle>

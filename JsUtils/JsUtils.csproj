@@ -41,6 +41,7 @@
     <Content Include="command.js" />
     <Content Include="editable.js" />
     <Content Include="pagedobservablearray.js" />
+    <Content Include="progressiveNav.js" />
     <Content Include="pubsub.js" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
@@ -52,6 +53,7 @@
     <Content Include="Tests\testeditable.js" />
     <Content Include="Tests\testcommand.js" />
     <Content Include="Tests\testpagedobservablearray.js" />
+    <Content Include="Tests\testprogressivenav.js" />
     <Content Include="Tests\testpubsub.js" />
     <Content Include="Tests\TestRunner.htm" />
     <Content Include="Tests\testpagedlist.js" />
