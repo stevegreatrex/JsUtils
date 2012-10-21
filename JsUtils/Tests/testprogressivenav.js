@@ -87,3 +87,42 @@ test("click does nothing when there is no target", function () {
 	ok(context.branch1.allHidden(), "no changes should have been made");
 	ok(context.branch2.allHidden(), "no changes should have been made");
 });
+
+test("multiple calls select correct group", function () {
+	var context = buildNavUI();
+
+	context.container.progressiveNav("branch2");
+
+	//check that branch 2 is now visible
+	ok(context.top.allHidden(), "other groups should be hidden");
+	ok(context.branch1.allHidden(), "other groups should be hidden");
+	ok(!context.branch2.allHidden(), "selected group should be displayed");
+
+	context.container.progressiveNav("branch1");
+
+	//check that branch 1 is now visible
+	ok(context.top.allHidden(), "other groups should be hidden");
+	ok(context.branch2.allHidden(), "other groups should be hidden");
+	ok(!context.branch1.allHidden(), "selected group should be displayed");
+});
+
+test("navigation raises event", function () {
+	var context = buildNavUI(),
+		events = [];
+	context.container.on("navchanged", function (e, group) { events.push(group); });
+
+	context.container.progressiveNav();
+	context.container.progressiveNav("branch1");
+	$(context.top[1]).trigger("click");
+	context.container.progressiveNav("top");
+	$(context.top[0]).trigger("click");
+
+	//check that each of the above raised an event
+	deepEqual([
+		"top",
+		"branch1",
+		"branch2",
+		"top",
+		"branch1"
+	], events, "events should have been raised");
+});

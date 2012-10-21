@@ -2,64 +2,45 @@
 	"use strict";
 
 	$.fn.progressiveNav = function (startGroup) {
-		//groups object to store discovered groups
-		var groups = {},
 
-			//cached reference to target
-            $this = $(this),
+		var $this = $(this),
 
-			//find all nav links under target
-            $allNav = $this.find("[data-nav-group]"),
-
-			//helper function to display a named group
+			//shows a group with specified groupname
 			showGroup = function (groupName) {
-				$allNav.hide();
+				$this.find("[data-nav-group!=" + groupName + "]").hide();
+				$this.find("[data-nav-group=" + groupName + "]").fadeIn();
 
-				if (groups[groupName]) {
-					groups[groupName].fadeIn();
-				}
+				//raise an event on the element to notify that it was updated
+				$this.trigger("navchanged", groupName);
 			};
 
-		//iterate through all nav items
-		$allNav.each(function (i, element) {
+		//hook up click event handlers for navigation
+		$this
+			.off("click.nav")
+			.on("click.nav", "[data-nav-target]", function () {
+				showGroup($(this).attr("data-nav-target"));
+			});
 
-			//get the group name
-			var $element = $(element),
-                groupName = $element.attr("data-nav-group");
-
-			//record the group if we haven't seen it before
-			if (!groups[groupName]) {
-				groups[groupName] = null;
-			}
-
-			//if we don't have a start group, use the first one found
-			if (!startGroup) {
-				startGroup = groupName;
-			}
-		})
-		//attach a click handler to handle navigation
-		.click(function () {
-			var target = $(this).attr("data-nav-target");
-			if (target) {
-				showGroup(target);
-				return false;
-			}
-		});
-
-		//iterate through all discovered groups and cache group items together
-		for (var groupName in groups) {
-			if (groups.hasOwnProperty(groupName)) {
-				groups[groupName] = $this.find("[data-nav-group=" + groupName + "]");
-			}
+		//grab the first group if none was specified
+		if (!startGroup) {
+			startGroup = $this.find("[data-nav-group]").first().attr("data-nav-group");
 		}
 
 		//show the first group - either passed in or the first one found
 		showGroup(startGroup);
 	};
 
-	ko.bindingHandlers.progressiveNav =  {
-		update: function (element) {
-			$(element).progressiveNav();
+	ko.bindingHandlers.progressiveNav = {
+		init: function (element, valueAccessor) {
+			var setter = valueAccessor();
+			if (typeof setter === "function") {
+				$(element).on("navchanged", function (e, groupName) {
+					setter(groupName);
+				});
+			}
+		},
+		update: function (element, valueAccessor) {
+			$(element).progressiveNav(ko.utils.unwrapObservable(valueAccessor()));
 		}
 	};
 }(jQuery, ko));
