@@ -437,6 +437,10 @@
 					setter(groupName);
 				});
 			}
+
+			ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
+				$(element).off("navchanged");
+			});
 		},
 		update: function (element, valueAccessor) {
 			$(element).progressiveNav(ko.utils.unwrapObservable(valueAccessor()));
