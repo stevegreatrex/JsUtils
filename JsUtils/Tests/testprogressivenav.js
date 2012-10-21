@@ -126,3 +126,39 @@ test("navigation raises event", function () {
 		"branch1"
 	], events, "events should have been raised");
 });
+
+test("customBinding updates level", function () {
+	var context = buildNavUI(),
+		viewModel = {
+			level: ko.observable("branch1")
+		};
+
+	try
+	{
+		context.container.attr("data-bind", "progressiveNav: level");
+		$("body").append(context.container);
+		ko.applyBindings(viewModel, context.container[0]);
+
+		//check that the initial branch is displayed
+		ok(context.top.allHidden(), "other groups should be hidden");
+		ok(context.branch2.allHidden(), "other groups should be hidden");
+		ok(!context.branch1.allHidden(), "selected group should be displayed");
+
+		//set the observable and check branch is updated
+		viewModel.level("branch2");
+		viewModel.level.valueHasMutated();
+		ok(context.top.allHidden(), "(after set vm) other groups should be hidden");
+		ok(context.branch1.allHidden(), "(after set vm) other groups should be hidden");
+		ok(!context.branch2.allHidden(), "(after set vm) selected group should be displayed");
+
+		//set the nav level and check the view model is updated
+		context.container.progressiveNav("top");
+		equal("top", viewModel.level(), "observable should be updated");
+
+		$(context.top[1]).trigger("click");
+		equal("branch2", viewModel.level(), "observable should be updated");
+	}
+	finally {
+		context.container.remove();
+	}
+});
