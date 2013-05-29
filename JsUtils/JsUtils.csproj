@@ -67,6 +67,9 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="utils.js.bundle" />
+    <None Include="utils.min.js.map">
+      <DependentUpon>utils.js.bundle</DependentUpon>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

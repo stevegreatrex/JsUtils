@@ -1,4 +1,4 @@
-/* /pagedobservablearray.js */
+﻿///#source 1 1 /pagedobservablearray.js
 /*global ko: false*/
 
 (function (window, ko, undefined) {
@@ -66,7 +66,7 @@
         this.previousPage = _previousPage;
     };
 }(window, ko));
-/* /pagedlist.js */
+///#source 1 1 /pagedlist.js
 /*global ko: false*/
 
 (function (window, ko, undefined) {
@@ -168,7 +168,7 @@
 		return _page;
 	};
 }(window, ko));
-/* /editable.js */
+///#source 1 1 /editable.js
 /*global ko: false*/
 
 (function (window, ko, undefined) {
@@ -208,8 +208,56 @@
         //public members
         return _observable;
     };
+
+    var forEachEditableProperty = function (target, action) {
+	    for (var prop in target) {
+			if (target.hasOwnProperty(prop)) {
+				var value          = target[prop],
+					unwrappedValue = ko.utils.unwrapObservable(value);
+
+				//direct editables
+				if (value && value.isEditing) {
+					action(value);
+				}
+
+				//editables in arrays
+				if (unwrappedValue && unwrappedValue.length) {
+					for (var i = 0; i < unwrappedValue.length; i++) {
+						if (unwrappedValue[i] && unwrappedValue[i].isEditing) {
+							action(unwrappedValue[i]);
+						}
+					}
+				}
+			}
+		}
+	};
+
+	ko.editable.makeEditable = function (target) {
+		if (!target) {
+			throw "Target must be specified";
+		}
+
+		target.isEditing = ko.observable(false);
+
+		target.beginEdit = function () {
+			if (!target.isEditable || target.isEditable()) {
+				forEachEditableProperty(target, function (prop) { prop.beginEdit(); });
+				target.isEditing(true);
+			}
+		};
+
+		target.endEdit = function () {
+			forEachEditableProperty(target, function (prop) { prop.endEdit(); });
+			target.isEditing(false);
+		};
+
+		target.cancelEdit = function () {
+			forEachEditableProperty(target, function (prop) { prop.cancelEdit(); });
+			target.isEditing(false);
+		};
+	};
 }(window, ko));
-/* /command.js */
+///#source 1 1 /command.js
 /*global ko: false*/
 
 (function (window, ko, undefined) {
@@ -332,7 +380,7 @@
 		return _execute;
 	};
 }(window, ko));
-/* /pubsub.js */
+///#source 1 1 /pubsub.js
 (function (window, $, undefined) {
     "use strict";
 
@@ -396,7 +444,7 @@
         }
     };
 }(window, jQuery));
-/* /progressivenav.js */
+///#source 1 1 /progressivenav.js
 (function ($, ko, undefined) {
 	"use strict";
 
