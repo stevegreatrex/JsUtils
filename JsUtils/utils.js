@@ -211,9 +211,9 @@
 
     var forEachEditableProperty = function (target, action) {
 	    for (var prop in target) {
-			if (target.hasOwnProperty(prop)) {
-				var value          = target[prop],
-					unwrappedValue = ko.utils.unwrapObservable(value);
+	        if (target.hasOwnProperty(prop)) {
+                //unwrap the value to support observable arrays and properties
+				var value = ko.utils.unwrapObservable(target[prop]);
 
 				//direct editables
 				if (value && value.isEditing) {
@@ -221,10 +221,10 @@
 				}
 
 				//editables in arrays
-				if (unwrappedValue && unwrappedValue.length) {
-					for (var i = 0; i < unwrappedValue.length; i++) {
-						if (unwrappedValue[i] && unwrappedValue[i].isEditing) {
-							action(unwrappedValue[i]);
+				if (value && value.length) {
+				    for (var i = 0; i < value.length; i++) {
+						if (value[i] && value[i].isEditing) {
+							action(value[i]);
 						}
 					}
 				}
