@@ -3,86 +3,109 @@
 (function (window, ko, undefined) {
     "use strict";
 
-    window.Utils = window.Utils || {};
+    function toEditable(observable, getRollbackValue) {
+        var rollbackValues = [];
 
-    ko.editable = window.Utils.editable = function (initial) {
-        var _rollbackValue,
-            _observable = ko.observable(initial);
+        getRollbackValue = getRollbackValue || function (observable) { return observable(); };
 
         //a flag to indicate if the field is being edited
-        _observable.isEditing = ko.observable(false);
+        observable.isEditing = ko.observable(false);
 
         //start an edit
-        _observable.beginEdit = function () {
-            _rollbackValue = _observable();
-            _observable.isEditing(true);
+        observable.beginEdit = function () {
+            if (observable.isEditing()) { return; }
+
+            rollbackValues.push(getRollbackValue(observable));
+
+            observable.isEditing(true);
         };
 
         //end (commit) an edit
-        _observable.endEdit = function () {
-            if (!_observable.isEditing()) { return; }
+        observable.endEdit = function () {
+            if (!observable.isEditing()) { return; }
 
-            _observable.isEditing(false);
+            observable.isEditing(false);
         };
 
         //cancel and roll-back an edit
-        _observable.cancelEdit = function () {
-            if (!_observable.isEditing()) { return; }
-            
-            _observable(_rollbackValue);
+        observable.cancelEdit = function () {
+            if (!observable.isEditing() || !rollbackValues.length) { return; }
 
-            _observable.isEditing(false);
+            observable(rollbackValues.pop());
+
+            observable.isEditing(false);
         };
 
-        //public members
-        return _observable;
+        //roll-back to historical committed values
+        observable.rollback = function () {
+            if (rollbackValues.length) {
+                observable(rollbackValues.pop());
+            }
+        };
+
+        return observable;
+    }
+
+    ko.editable = function (initial) {
+        return toEditable(ko.observable(initial));
+    };
+
+    ko.editableArray = function (initial) {
+        return toEditable(ko.observableArray(), function (observable) {
+            return observable.slice();
+        });
     };
 
     var forEachEditableProperty = function (target, action) {
-	    for (var prop in target) {
-	        if (target.hasOwnProperty(prop)) {
-                //unwrap the value to support observable arrays and properties
-				var value = ko.utils.unwrapObservable(target[prop]);
+        for (var prop in target) {
+            if (target.hasOwnProperty(prop)) {
+                var value = target[prop];
 
-				//direct editables
-				if (value && value.isEditing) {
-					action(value);
-				}
+                //direct editables
+                if (value && value.isEditing) {
+                    action(value);
+                }
 
-				//editables in arrays
-				if (value && value.length) {
-				    for (var i = 0; i < value.length; i++) {
-						if (value[i] && value[i].isEditing) {
-							action(value[i]);
-						}
-					}
-				}
-			}
-		}
-	};
+                var unwrappedValue = ko.utils.unwrapObservable(value);
 
-	ko.editable.makeEditable = function (target) {
-		if (!target) {
-			throw "Target must be specified";
-		}
+                //editables in arrays
+                if (unwrappedValue && unwrappedValue.length) {
+                    for (var i = 0; i < unwrappedValue.length; i++) {
+                        if (unwrappedValue[i] && unwrappedValue[i].isEditing) {
+                            action(unwrappedValue[i]);
+                        }
+                    }
+                }
+            }
+        }
+    };
 
-		target.isEditing = ko.observable(false);
+    ko.editable.makeEditable = function (target) {
+        if (!target) {
+            throw "Target must be specified";
+        }
 
-		target.beginEdit = function () {
-			if (!target.isEditable || target.isEditable()) {
-				forEachEditableProperty(target, function (prop) { prop.beginEdit(); });
-				target.isEditing(true);
-			}
-		};
+        target.isEditing = ko.observable(false);
 
-		target.endEdit = function () {
-			forEachEditableProperty(target, function (prop) { prop.endEdit(); });
-			target.isEditing(false);
-		};
+        target.beginEdit = function () {
+            if (!target.isEditable || target.isEditable()) {
+                forEachEditableProperty(target, function (prop) { prop.beginEdit(); });
+                target.isEditing(true);
+            }
+        };
 
-		target.cancelEdit = function () {
-			forEachEditableProperty(target, function (prop) { prop.cancelEdit(); });
-			target.isEditing(false);
-		};
-	};
+        target.endEdit = function () {
+            forEachEditableProperty(target, function (prop) { prop.endEdit(); });
+            target.isEditing(false);
+        };
+
+        target.cancelEdit = function () {
+            forEachEditableProperty(target, function (prop) { prop.cancelEdit(); });
+            target.isEditing(false);
+        };
+
+        target.rollback = function () {
+            forEachEditableProperty(target, function (prop) { prop.rollback(); });
+        };
+    };
 }(window, ko));
