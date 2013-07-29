@@ -1,27 +1,29 @@
-﻿(function () {
+﻿/*global ko: false, module: false, test: false, raises: false, equal: false, ok: false*/
+
+(function () {
     "use strict";
 
     module("Command Tests");
 
     test("throws when null options are specified", function () {
         raises(function () {
-            Utils.command();
+            ko.command();
         }, /No options were specified/);
     });
 
     test("throws when no action is specified", function () {
         raises(function () {
-            Utils.command({});
+            ko.command({});
         }, /No action was specified in the options/);
     });
 
     test("isRunning initially false", function () {
-        var command = Utils.command({ action: {} });
+        var command = ko.command({ action: {} });
         equal(false, command.isRunning());
     });
 
     test("execute returns a completed deferred if the action does not return a promise", function () {
-        var command = Utils.command({
+        var command = ko.command({
             action: function () { }
         });
 
@@ -42,12 +44,12 @@
     test("execute resolves completed deferred with original result if result is returned from function", function () {
         var doneCalled = false,
             actionResult = { value: 123 },
-            command = Utils.command({
+            command = ko.command({
                 action: function () { return actionResult; }
             });
 
         //execute the command and check the result
-        var result = command().done(function (result) {
+        command().done(function (result) {
             equal(result, actionResult, "The action's result should be passed to the done handler");
             doneCalled = true;
         });
@@ -63,12 +65,12 @@
     test("execute runs fail handlers if the command action throws an error", function () {
         var failCalled = false,
             actionError = "a random error",
-            command = Utils.command({
+            command = ko.command({
                 action: function () { throw actionError; }
             });
 
         //execute the command and check the result
-        var result = command().fail(function (error) {
+        command().fail(function (error) {
             equal(error, actionError, "The action's error should be passed to the fail handler");
             failCalled = true;
         });
@@ -82,13 +84,15 @@
 
     test("execute is passed correct this and arguments", function () {
         var arg1 = "one", arg2 = "two";
-        var command = Utils.command({
+        var outsideContext = this;
+        var command = ko.command({
             action: function (a1, a2) {
-                equal(this, command, "this was not set to the command");
+                equal(this, outsideContext, "this should be set to the context in which the command is invoked");
                 equal(a1, arg1, "arguments were not passed in");
                 equal(a2, arg2, "arguments were not passed in");
                 return $.Deferred();
-            }
+            },
+            context: this
         });
 
         command(arg1, arg2);
@@ -97,7 +101,7 @@
 
     test("execute sets isRunning", function () {
         var deferred = $.Deferred();
-        var command = Utils.command({
+        var command = ko.command({
             action: function () {
                 return deferred;
             }
@@ -121,7 +125,7 @@
             responseData = {},
             handlerCalled = false;
 
-        var command = Utils.command({
+        var command = ko.command({
             action: function () {
                 return deferred;
             },
@@ -146,7 +150,7 @@
             responseData = {},
             handlerCalled = false;
 
-        var command = Utils.command({
+        var command = ko.command({
             action: function () {
                 return deferred;
             },
@@ -171,7 +175,7 @@
             responseData = {},
             handlerCalled = false;
 
-        var command = Utils.command({
+        var command = ko.command({
             action: function () {
                 return deferred;
             }
@@ -196,7 +200,7 @@
             responseData = {},
             handlerCalled = false;
 
-        var command = Utils.command({
+        var command = ko.command({
             action: function () {
                 return deferred;
             }
@@ -221,7 +225,7 @@
             responseData = {},
             handlerCalled = false;
 
-        var command = Utils.command({
+        var command = ko.command({
             action: function () {
                 return deferred;
             }
@@ -246,7 +250,7 @@
             responseData = {},
             handlerCalled = false;
 
-        var command = Utils.command({
+        var command = ko.command({
             action: function () {
                 return deferred;
             }
@@ -269,7 +273,7 @@
     test("can specify function as only parameter", function () {
         var deferred = $.Deferred();
 
-        var command = Utils.command(function () {
+        var command = ko.command(function () {
             return deferred;
         });
 
@@ -291,7 +295,7 @@
         responseData = {},
         handlerCalled = false;
 
-        var command = Utils.command({
+        var command = ko.command({
             action: function () {
                 return deferred;
             }
@@ -316,8 +320,8 @@
             done1 = false,
             done2 = false,
             ViewModel = function () {
-                this.command1 = ko.command(function () { return deferred1; }).done(function () { done1 = true });
-                this.command2 = ko.command(function () { return deferred2; }).done(function () { done2 = true });
+                this.command1 = ko.command(function () { return deferred1; }).done(function () { done1 = true; });
+                this.command2 = ko.command(function () { return deferred2; }).done(function () { done2 = true; });
             },
             testSubject = new ViewModel();
 
@@ -347,14 +351,14 @@
     });
 
     test("canExecute returns true by default", function () {
-        var command = Utils.command(function () { });
+        var command = ko.command(function () { });
 
         ok(command.canExecute(), "canExecute should return true unless something has been specified");
     });
 
     test("canExecute returns false whilst action is running", function () {
         var deferred = $.Deferred(),
-            command = Utils.command(function () { return deferred; });
+            command = ko.command(function () { return deferred; });
 
         //execute the command
         command();
@@ -371,7 +375,7 @@
 
     test("canExecute returns true after action fails", function () {
         var deferred = $.Deferred(),
-            command = Utils.command(function () { return deferred; });
+            command = ko.command(function () { return deferred; });
 
         //execute the command
         command();
@@ -389,8 +393,8 @@
 
     test("canExecute returns false if options-specified item returns false", function () {
         var actionCanExecute = true,
-            command = Utils.command({
-                action: function () { return deferred; },
+            command = ko.command({
+                action: function () { return null; },
                 canExecute: function () { return actionCanExecute; }
             });
 
@@ -420,23 +424,25 @@
 
     test("canExecute is called in the context of the command", function () {
         var canExecuteContext,
-            command = Utils.command({
+            outsideContext = this,
+            command = ko.command({
                 action: function () { },
                 canExecute: function () {
                     canExecuteContext = this;
-                }
+                },
+                context: this
             });
 
         command.canExecute();
 
-        equal(canExecuteContext, command, "canExecute should be called in the context of the command");
+        equal(canExecuteContext, outsideContext, "canExecute should be called in the context in which the command was executed");
     });
 
     test("execute returns a completed deferred object when canExecute is false", function () {
         var actionCalled = false,
             doneCalled = false,
             failCalled = false,
-            command = Utils.command({
+            command = ko.command({
                 action: function () { actionCalled = true; },
                 canExecute: function () { return false; }
             });
@@ -454,7 +460,7 @@
     });
 
     test("failed is initially false", function () {
-        var testSubject = Utils.command(function () { });
+        var testSubject = ko.command(function () { });
 
         ok(!testSubject.failed(), "failed should initially return false");
     });
@@ -463,7 +469,7 @@
         var deferred = $.Deferred(),
             responseData = {};
 
-        var command = Utils.command({
+        var command = ko.command({
             action: function () {
                 return deferred;
             }
@@ -483,5 +489,80 @@
 
         //check the flag was set
         ok(command.failed(), "failed should have been set");
+    });
+
+    test("all success functions are run in correct context", function () {
+        var counts = {};
+
+        //helper to create stub functions that check the context and update a count
+        function createStubFunction(name) {
+            counts[name] = 0;
+            return function () {
+                equal(this.id, 123, "The context of the " + name + " function should be the view model");
+                counts[name]++;
+                return true; //only needed for canExecute but doesn't cause problems elsewhere
+            };
+        }
+
+        //the viewmodel itself
+        function ViewModel() {
+            this.id = 123;
+
+            this.action = ko.command({
+                action: this.execute,
+                canExecute: this.canExecute,
+                context: this
+            })
+            .done(this.done)
+            .always(this.always);
+        }
+
+        //stub functions on the prototype
+        ViewModel.prototype.execute    = createStubFunction("execute");
+        ViewModel.prototype.canExecute = createStubFunction("canExecute");
+        ViewModel.prototype.done       = createStubFunction("done");
+        ViewModel.prototype.always     = createStubFunction("always");
+
+        var instance = new ViewModel();
+        instance.action();
+
+        equal(counts.execute, 1, "execute should have been called");
+        equal(counts.done, 1, "done should have been called");
+        equal(counts.always, 1, "always should have been called");
+        //canExecute probably has been called many times because its within an observable.  we
+        //just want to make sure that it has run *at least once* so that our assertion in the function
+        //has been run
+        ok(counts.canExecute > 1, "canExecute should have been called");
+    });
+
+    test("fail function is run in correct context", function () {
+        var counts = {};
+
+        function createStubFunction(name) {
+            counts[name] = 0;
+            return function () {
+                equal(this.id, 123, "The context of the " + name + " function should be the view model");
+                counts[name]++;
+            };
+        }
+
+        function ViewModel() {
+            this.id = 123;
+
+            this.action = ko.command(function () {
+                throw "Error";
+            })
+            .fail(this.fail)
+            .always(this.always);
+        }
+
+        ViewModel.prototype.always = createStubFunction("always");
+        ViewModel.prototype.fail   = createStubFunction("fail");
+
+        var instance = new ViewModel();
+        instance.action();
+
+        equal(counts.fail, 1, "fail should have been called");
+        equal(counts.always, 1, "always should have been called");
     });
 }());

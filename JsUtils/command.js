@@ -29,12 +29,12 @@
 		},
 
 		//factory method to create a $.Deferred that is already completed
-		_instantDeferred = function(resolve, returnValue) {
+		_instantDeferred = function(resolve, returnValue, context) {
 			var deferred = $.Deferred();
 			if (resolve) {
-			    deferred.resolve(returnValue);
+			    deferred.resolveWith(context, [returnValue]);
 			} else {
-			    deferred.reject(returnValue);
+			    deferred.rejectWith(context, [returnValue]);
 			}
 
 			return deferred;
@@ -43,9 +43,9 @@
 		//execute function (and return object
 		_execute = function () {
 			//check if we are able to execute
-			if (!_canExecute()) {
+		    if (!_canExecuteWrapper.call(options.context || this)) {
 				//dont attach any global handlers
-				return _instantDeferred(false).promise();
+		        return _instantDeferred(false, null, options.context || this).promise();
 			}
 
 			//notify that we are running and clear any existing error message
@@ -55,15 +55,15 @@
 			//try to invoke the action and get a reference to the deferred object
 			var promise;
 			try {
-				promise = options.action.apply(_execute, arguments);
+			    promise = options.action.apply(options.context || this, arguments);
 
 				//if the returned result is *not* a promise, create a new one that is already resolved
 				if (!promise || !promise.done || !promise.always || !promise.fail) {
-					promise = _instantDeferred(true, promise).promise();
+				    promise = _instantDeferred(true, promise, options.context || this).promise();
 				}
 
 			} catch(error) {
-				promise = _instantDeferred(false, error).promise();
+			    promise = _instantDeferred(false, error, options.context || this).promise();
 			}
 
 			//set up our callbacks
@@ -77,11 +77,11 @@
 		
 		//canExecute flag
 		_forceRefreshCanExecute = ko.observable(), //note, this is to allow us to force a re-evaluation of the computed _canExecute observable
+        _canExecuteWrapper = options.canExecute || function () { return true; },
 		_canExecute = ko.computed(function() {
 			_forceRefreshCanExecute(); //just get the value so that we register _canExecute with _forceRefreshCanExecute
-			return !_isRunning() &&
-				(typeof options.canExecute === "undefined" || options.canExecute.call(_execute));
-		}, _execute),
+			return !_isRunning() && _canExecuteWrapper.call(options.context || this);
+		}, options.context || this),
 		
 		//invalidate canExecute
 		_canExecuteHasMutated = function() {

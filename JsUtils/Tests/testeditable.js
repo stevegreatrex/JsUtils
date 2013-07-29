@@ -1,4 +1,6 @@
-﻿(function () {
+﻿/*global ko: false, module: false, test: false, raises: false, equal: false, ok: false, deepEqual: false*/
+
+(function () {
     "use strict";
 
     module("Editable Tests");
@@ -264,6 +266,11 @@
 
         eachTargetEditable(rollback);
         eachTargetEditable(isInitialValue, "All values should have been rolled back");
+    });
+
+    test("editableArray sets initial value", function () {
+        var editableArray = ko.editableArray([1, 2, 3]);
+        deepEqual(editableArray(), [1, 2, 3], "initial value was not set");
     });
 
     test("editableArray behaves as a regular editable", function () {
